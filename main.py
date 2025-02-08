@@ -182,6 +182,12 @@ async def logout(response: Response, request: Request):
         response.delete_cookie("session_id")
     return RedirectResponse(url="/")
 
+
+@app.post("/")
+async def handle_post():
+    return {"message": "POST request received"}
+
+
     
     
 
