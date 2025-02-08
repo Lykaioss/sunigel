@@ -8,10 +8,15 @@ from datetime import datetime , timezone
 import bcrypt
 from fastapi.middleware.cors import CORSMiddleware
 import uuid
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
+
+templates = Jinja2Templates(directory="templates")
+
 
 sessions = {}
 
@@ -62,11 +67,11 @@ db_dependency = Annotated[Session , Depends(get_db)]
 
 
 
-@app.post("/posts/" , status_code=status.HTTP_201_CREATED)
-async def create_post(post: PostBase , db: db_dependency):
-    db_post = models.Post(**post.model_dump())
-    db.add(db_post)
-    db.commit()
+# @app.post("/posts/" , status_code=status.HTTP_201_CREATED)
+# async def create_post(post: PostBase , db: db_dependency):
+#     db_post = models.Post(**post.model_dump())
+#     db.add(db_post)
+#     db.commit()
 
 
 def get_current_user(request: Request):
@@ -104,23 +109,18 @@ async def create_user(user: UserBase, db: db_dependency):
 @app.post("/login/")
 async def login(user: LoginRequest, response: Response, db: db_dependency):
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
-
     if db_user is None or not bcrypt.checkpw(user.password.encode('utf-8'), db_user.password.encode('utf-8')):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     
-    # Generate a session ID
+    # Generate a session ID and store it
     session_id = str(uuid.uuid4())
     sessions[session_id] = {
-        # "user_id": db_user.id,
         "username": db_user.username,
         "created_at": datetime.now(timezone.utc)
     }
-
-
-    # Set session ID as a cookie
-    response.set_cookie(key="session_id", value=session_id, httponly=True, max_age=3600)
-    return {"message": "Login successful" , "username" : db_user.username}
-
+    
+    # Return a JSON response instead of redirecting
+    return {"message": "Login successful", "username": db_user.username, "session_id": session_id}
 
 @app.get("/get_user")
 async def show_user(request: Request):
@@ -148,17 +148,31 @@ async def show_user(request: Request):
     }
 
 
+@app.get("/home", response_class=HTMLResponse)
+async def home(request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id is None or session_id not in sessions:
+        return RedirectResponse(url="/")  # Redirect to login if not authenticated
+
+    user_session = sessions[session_id]
+    return templates.TemplateResponse("home.html", {"request": request, "username": user_session["username"]})
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("log.html", {"request": request})
+
+
+
+
 @app.post("/logout/")
 async def logout(response: Response, request: Request):
     session_id = request.cookies.get("session_id")
-    if session_id in sessions:
+    if session_id and session_id in sessions:
         del sessions[session_id]
         response.delete_cookie("session_id")
-        print("")
-        return {"message": "Logged out successfully"}
-    else:
-        print("your phone linging")
-        return{ "message": "your phone linging"}
+    return RedirectResponse(url="/")
+
     
     
 

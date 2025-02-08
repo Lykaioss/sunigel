@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f4f4f9;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .logout-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .logout-button:hover {
+      background: #d11a1a;
+    }
+  </style>
+</head>
+<body>
+  <button class="logout-button" id="logout-button">Logout</button>
+  <div class="container">
+    <h1>Welcome to the Home Page!</h1>
+    <p>This is a simple empty page for now.</p>
+  </div>
+
+  <script>
+    document.getElementById('logout-button').addEventListener('click', async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/logout/', {
+          method: 'POST',
+          credentials: 'include', // Send cookies
+        });
+
+        if (response.ok) {
+          alert('You have been logged out.');
+          window.location.href = '/'; // Redirect to login/signup page
+        } else {
+          const error = await response.json();
+          alert(`Logout failed: ${error.detail}`);
+        }
+      } catch (error) {
+        console.error('Error during logout:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

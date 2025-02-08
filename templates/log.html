@@ -124,8 +124,8 @@
           <input type="password" id="password" placeholder="Enter your password" required />
         </div>
         <div class="form-group toggle">
-          <label for="toggle">Toggle Option</label>
-          <input type="checkbox" id="toggle" />
+          <label for="toggle"> Employer </label>
+          <input type="checkbox" id="isEmp" />
         </div>
         <button type="submit">Sign Up</button>
       </form>
@@ -147,76 +147,104 @@
   </div>
 
   <script>
-    const formHeading = document.getElementById('form-heading');
-    const signupForm = document.getElementById('signup-form');
-    const formSwitchText = document.getElementById('form-switch-text');
-    let isSignup = true;
+   const formHeading = document.getElementById('form-heading');
+const signupForm = document.getElementById('signup-form');
+const loginForm = document.getElementById('login-form');
+const formSwitchText = document.getElementById('form-switch-text');
+let isSignup = true;
 
-    function toggleForm() {
-      if (isSignup) {
-        formHeading.textContent = 'Log In';
-        signupForm.classList.remove('active');
-        loginForm.classList.add('active');
-        formSwitchText.innerHTML = `Don't have an account? <a href="#" id="switch-form">Sign Up</a>`;
-      } else {
-        formHeading.textContent = 'Sign Up';
-        signupForm.classList.add('active');
-        loginForm.classList.remove('active');
-        formSwitchText.innerHTML = `Already have an account? <a href="#" id="switch-form">Log In</a>`;
-      }
-      isSignup = !isSignup;
-      document.getElementById('switch-form').addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleForm();
-      });
+function toggleForm() {
+  if (isSignup) {
+    formHeading.textContent = 'Log In';
+    signupForm.classList.remove('active');
+    loginForm.classList.add('active');
+    formSwitchText.innerHTML = `Don't have an account? <a href="#" id="switch-form">Sign Up</a>`;
+  } else {
+    formHeading.textContent = 'Sign Up';
+    signupForm.classList.add('active');
+    loginForm.classList.remove('active');
+    formSwitchText.innerHTML = `Already have an account? <a href="#" id="switch-form">Log In</a>`;
+  }
+  isSignup = !isSignup;
+  document.getElementById('switch-form').addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleForm();
+  });
+}
+
+document.getElementById('switch-form').addEventListener('click', (e) => {
+  e.preventDefault();
+  toggleForm();
+});
+
+// Handle Sign Up
+signupForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById('username').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const isEmp = document.getElementById('isEmp').value;
+
+  try {
+    console.log
+    const response = await fetch('http://127.0.0.1:8000/users/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, email, password , isEmp  }),
+    });
+
+    if (response.ok) {
+      alert('Sign Up successful! You can now log in.');
+      toggleForm(); // Switch to the login form
+    } else {
+      const error = await response.json();
+      alert(`Sign Up failed: ${error.detail}`);
     }
+  } catch (error) {
+    console.error('Error during Sign Up:', error);
+    alert('An error occurred. Please try again.');
+  }
+});
 
-    document.getElementById('switch-form').addEventListener('click', (e) => {
-      e.preventDefault();
-      toggleForm();
+// Handle Login
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+      credentials: 'include', // Ensure cookies are sent
     });
-    const loginForm = document.getElementById('login-form');
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
 
-      const username = document.getElementById('login-username').value;
-      const password = document.getElementById('login-password').value;
+    console.log(response)
 
-      try {
-        const response = await fetch('http://127.0.0.1:8000/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username, password }),
+    if (response.ok) {
+      const data = await response.json();
+      
+      alert(`Login successful! Welcome, ${data.username}`);
 
+      // Redirect to the home page
+      window.location.href = '/home';
+    } else {
+      const error = await response.json();
+      alert(`Login failed: ${error.detail}`);
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    alert('An error occurred. Please try again.');
+  }
+});
 
-        });
-
-        fetch("http://localhost:8000/get_user", {
-          method: "GET",
-          credentials: "include" // This makes sure cookies are sent
-        })
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch(error => console.error(error));
-
-
-        console.log(JSON.stringify({ username, password }))
-        if (response.ok) {
-          const data = await response.json();
-          alert(`Login successful! Welcome, ${data.username}`);
-          // Optionally redirect to another page
-          // window.location.href = '/dashboard';
-        } else {
-          const error = await response.json();
-          alert(`Login failed: ${error.detail}`);
-        }
-      } catch (error) {
-        console.error('Error during login:', error);
-        alert('An error occurred. Please try again.');
-      }
-    });
 
   </script>
 </body>
