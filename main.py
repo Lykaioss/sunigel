@@ -118,9 +118,17 @@ async def login(user: LoginRequest, response: Response, db: db_dependency):
         "username": db_user.username,
         "created_at": datetime.now(timezone.utc)
     }
+
+    # Set the session cookie (HTTP-only for security)
+    response.set_cookie(
+        key="session_id",
+        value=session_id,
+        httponly=True,
+        max_age=3600  # Cookie expires in 1 hour
+    )
     
-    # Return a JSON response instead of redirecting
-    return {"message": "Login successful", "username": db_user.username, "session_id": session_id}
+    return {"message": "Login successful", "username": db_user.username}
+
 
 @app.get("/get_user")
 async def show_user(request: Request):
@@ -151,6 +159,7 @@ async def show_user(request: Request):
 @app.get("/home", response_class=HTMLResponse)
 async def home(request: Request):
     session_id = request.cookies.get("session_id")
+    print(" radhan" ,session_id)
     if session_id is None or session_id not in sessions:
         return RedirectResponse(url="/")  # Redirect to login if not authenticated
 
