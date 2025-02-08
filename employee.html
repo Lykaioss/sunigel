@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suvidha Foundation | Employer Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Color Palette */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #9b59b6;
+            --background-color: #f4f6f7;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --gradient-primary: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            --gradient-secondary: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        /* Container Styles */
+        .container {
+            width: 90%;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(37, 117, 252, 0.2);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-icon {
+            font-size: 3rem;
+            margin-right: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        /* Form Styles */
+        .form-section, .jobs-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.8s ease;
+            transition: all 0.3s ease;
+        }
+
+        .form-section:hover, .jobs-section:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.2);
+        }
+
+        .submit-btn {
+            background: var(--gradient-secondary);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 7px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: all 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Job Listing Styles */
+        .job-card {
+            background: linear-gradient(to right, #f6f8f9 0%, #e5ebee 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .job-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .job-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .job-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .job-category {
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .job-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon">🏢</div>
+                <div class="header-title">Suvidha Foundation | Employer Portal</div>
+            </div>
+            <div>
+                <span style="font-size: 1.2rem; opacity: 0.8;">Empowering Connections</span>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Job Posting Form -->
+            <div class="form-section">
+                <h2 style="color: var(--primary-color); margin-bottom: 20px;">Post a New Job</h2>
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">Job Title</label>
+                        <input type="text" class="form-input" placeholder="Enter job title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Job Description</label>
+                        <textarea class="form-input" placeholder="Describe job responsibilities" rows="4" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Job Category</label>
+                        <select class="form-select" required>
+                            <option value="">Select Category</option>
+                            <option>Technology</option>
+                            <option>Marketing</option>
+                            <option>Design</option>
+                            <option>Finance</option>
+                            <option>Human Resources</option>
+                            <option>Education</option>
+                            <option>Healthcare</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Application Deadline</label>
+                        <input type="date" class="form-input" required>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Post Job Opportunity</button>
+                </form>
+            </div>
+
+            <!-- Job Listings -->
+            <div class="jobs-section">
+                <h2 style="color: var(--primary-color); margin-bottom: 20px;">Manage Job Postings</h2>
+                
+                <div class="job-card">
+                    <div class="job-header">
+                        <div class="job-title">Senior Software Engineer</div>
+                        <div class="job-category">Technology</div>
+                    </div>
+                    <p>Lead complex engineering projects and mentor junior developers.</p>
+                    <div class="job-footer">
+                        <div>
+                            <span>Deadline: 30 June 2024</span>
+                            <span> | </span>
+                            <span>12 Applicants</span>
+                        </div>
+                        <button class="delete-btn">Delete</button>
+                    </div>
+                </div>
+
+                <div class="job-card">
+                    <div class="job-header">
+                        <div class="job-title">Digital Marketing Specialist</div>
+                        <div class="job-category">Marketing</div>
+                    </div>
+                    <p>Develop and implement comprehensive digital marketing strategies.</p>
+                    <div class="job-footer">
+                        <div>
+                            <span>Deadline: 15 July 2024</span>
+                            <span> | </span>
+                            <span>8 Applicants</span>
+                        </div>
+                        <button class="delete-btn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
