@@ -278,17 +278,17 @@
                 <form>
                     <div class="form-group">
                         <label class="form-label">Job Title</label>
-                        <input type="text" class="form-input" placeholder="Enter job title" required>
+                        <input type="text" class="form-input" id="job_title" placeholder="Enter job title" required>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Job Description</label>
-                        <textarea class="form-input" placeholder="Describe job responsibilities" rows="4" required></textarea>
+                        <textarea class="form-input" id="job_description" placeholder="Describe job responsibilities" rows="4" required></textarea>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Job Category</label>
-                        <select class="form-select" required>
+                        <select class="form-select" id="job_cat" required>
                             <option value="">Select Category</option>
                             <option>Technology</option>
                             <option>Marketing</option>
@@ -297,20 +297,21 @@
                             <option>Human Resources</option>
                             <option>Education</option>
                             <option>Healthcare</option>
+                            <option>Other </option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Application Deadline</label>
-                        <input type="date" class="form-input" required>
+                        <input type="date" class="form-input" id="deadline" required>
                     </div>
 
-                    <button type="submit" class="submit-btn">Post Job Opportunity</button>
+                    <button type="submit" class="submit-btn" id="submitto">Post Job Opportunity</button>
                 </form>
             </div>
 
             <!-- Job Listings -->
-            <div class="jobs-section">
+            <!-- <div class="jobs-section">
                 <h2 style="color: var(--primary-color); margin-bottom: 20px;">Manage Job Postings</h2>
                 
                 <div class="job-card">
@@ -344,8 +345,53 @@
                         <button class="delete-btn">Delete</button>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </body>
+
+<script>
+
+    console.log("heelo ur phione lining")
+
+    document.getElementById('submitto').addEventListener('click', async() => {
+        // e.preventDefault();
+
+        const title = document.getElementById('job_title').value
+        const description = document.getElementById('job_description').value  
+        const category = document.getElementById('job_cat').value 
+        const deadline = document.getElementById('deadline').value  
+
+
+        try{
+            console.log("title" , title)
+            console.log("descrpp" , description)
+            console.log("category" , category) 
+            console.log("deadline" , deadline) 
+            const response = await fetch('http://127.0.0.1:8000/posts/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title , description , category , deadline}),
+                credentials: 'include',
+            })
+
+            if (response.ok) {
+          alert(' Job-Creation successful!');
+          window.location.href = 'http://127.0.0.1:8000/home';  // Redirect to home
+        } else {
+          const error = await response.json();
+          alert(` Job-Creation failed: ${error.detail}`);
+        }
+
+        } catch (error) {
+        console.error('Error during creation :', error);
+        alert('An error occurred. Please try again.');
+      }
+    
+
+
+         });
+</script>
 </html>

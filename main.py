@@ -4,12 +4,13 @@ from typing import Annotated
 import models
 from database import engine , SessionLocal
 from sqlalchemy.orm import Session
-from datetime import datetime , timezone
+from datetime import date , timezone , datetime
 import bcrypt
 from fastapi.middleware.cors import CORSMiddleware
 import uuid
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 
 
 app = FastAPI()
@@ -40,7 +41,7 @@ class PostBase(BaseModel):
     title : str
     description : str
     category : str
-    deadline : datetime
+    deadline : date
 
 
 class UserBase(BaseModel):
@@ -67,11 +68,32 @@ db_dependency = Annotated[Session , Depends(get_db)]
 
 
 
-# @app.post("/posts/" , status_code=status.HTTP_201_CREATED)
-# async def create_post(post: PostBase , db: db_dependency):
-#     db_post = models.Post(**post.model_dump())
-#     db.add(db_post)
-#     db.commit()
+@app.post("/posts/" , status_code=status.HTTP_201_CREATED)
+async def create_post(post: PostBase , db: db_dependency):
+    db_post = models.Post(**post.model_dump())
+    db.add(db_post)
+    db.commit()
+
+@app.get("/jobs/", response_class=JSONResponse)
+async def get_jobs(db: Session = Depends(get_db)):
+    """Returns job listings as JSON for the frontend."""
+    posts = db.query(models.Post).all()
+    
+    job_list = [
+        {
+            "title": post.title,
+            "description": post.description,
+            "category": post.category,
+            "deadline": post.deadline.strftime("%Y-%m-%d") if post.deadline else None
+        }
+        for post in posts
+    ]
+    
+    return JSONResponse(content=job_list)
+
+
+
+
 
 
 def get_current_user(request: Request):
@@ -93,7 +115,8 @@ async def create_user(user: UserBase, db: db_dependency):
         db_user = models.User(
             username=user.username,
             email=user.email,
-            password=hashed_password.decode('utf-8')  # Store it as a string
+            password=hashed_password.decode('utf-8'),
+            isEmp = user.isEmp   # Store it as a string
         )
         
         db.add(db_user)
@@ -116,18 +139,19 @@ async def login(user: LoginRequest, response: Response, db: db_dependency):
     session_id = str(uuid.uuid4())
     sessions[session_id] = {
         "username": db_user.username,
-        "created_at": datetime.now(timezone.utc)
+        "created_at": datetime.now(timezone.utc),
+        "isEmp": db_user.isEmp
     }
 
     # Set the session cookie (HTTP-only for security)
     response.set_cookie(
         key="session_id",
         value=session_id,
-        httponly=True,
+        # httponly=True,
         max_age=3600  # Cookie expires in 1 hour
     )
     
-    return {"message": "Login successful", "username": db_user.username}
+    return {"message": "Login successful", "username": db_user.username , "isEmp": db_user.isEmp }
 
 
 @app.get("/get_user")
@@ -146,12 +170,14 @@ async def show_user(request: Request):
 
     # Retrieve the user details from the session
     user_session = sessions[session_id]
+    print(f"Session Data: {user_session}")
     
     return {
         "session_id": session_id,
         "user": {
             "username": user_session["username"],
-            "created_at": user_session["created_at"]
+            "created_at": user_session["created_at"],
+            "isEmp": user_session["isEmp"]
         }
     }
 
@@ -166,6 +192,18 @@ async def home(request: Request):
     user_session = sessions[session_id]
     return templates.TemplateResponse("home.html", {"request": request, "username": user_session["username"]})
 
+@app.get("/employee" , response_class=HTMLResponse)
+async def home(request: Request):
+    session_id = request.cookies.get("session_id")
+    print(" radhan" ,session_id)
+    if session_id is None or session_id not in sessions:
+        return RedirectResponse(url="/")  # Redirect to login if not authenticated
+
+    user_session = sessions[session_id]
+    return templates.TemplateResponse("employee.html", {"request": request, "username": user_session["username"]})
+
+
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -177,10 +215,14 @@ async def root(request: Request):
 @app.post("/logout/")
 async def logout(response: Response, request: Request):
     session_id = request.cookies.get("session_id")
+    print("this be ssession_id : ", session_id)
     if session_id and session_id in sessions:
+        print("sess deldetd : " , session_id)
         del sessions[session_id]
-        response.delete_cookie("session_id")
-    return RedirectResponse(url="/")
+        response.set_cookie(key="session_id", value="", max_age=0)
+ # Ensure the path matches
+    return RedirectResponse(url="/", status_code=303)
+
 
 
 @app.post("/")

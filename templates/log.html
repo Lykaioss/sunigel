@@ -53,12 +53,6 @@
       font-size: 14px;
     }
 
-    .toggle {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
     .form-footer {
       text-align: center;
       margin-top: 20px;
@@ -103,6 +97,11 @@
       transform: translateX(0);
       position: relative;
     }
+
+    .radio-group {
+      display: flex;
+      justify-content: space-between;
+    }
   </style>
 </head>
 
@@ -123,9 +122,16 @@
           <label for="password">Password</label>
           <input type="password" id="password" placeholder="Enter your password" required />
         </div>
-        <div class="form-group toggle">
-          <label for="toggle"> Employer </label>
-          <input type="checkbox" id="isEmp" />
+        <div class="form-group">
+          <label>Role</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="role" value="true" required /> Employer
+            </label>
+            <label>
+              <input type="radio" name="role" value="false" required /> Student
+            </label>
+          </div>
         </div>
         <button type="submit">Sign Up</button>
       </form>
@@ -184,10 +190,11 @@
       const username = document.getElementById('username').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const isEmp = document.getElementById('isEmp').value;
+      const isEmp = document.querySelector('input[name="role"]:checked').value === 'true' ? true : false ;
+      
+      console.log("Role:", isEmp);
 
       try {
-        console.log
         const response = await fetch('http://127.0.0.1:8000/users/', {
           method: 'POST',
           headers: {
@@ -210,38 +217,34 @@
     });
 
     // Handle Login
-    // Handle Login
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-  const username = document.getElementById('login-username').value;
-  const password = document.getElementById('login-password').value;
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
 
-  try {
-    const response = await fetch('http://127.0.0.1:8000/login/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-      credentials: 'include', // Ensures cookies are sent
+      try {
+        const response = await fetch('http://127.0.0.1:8000/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          alert('Login successful!');
+          window.location.href = 'http://127.0.0.1:8000/home';  // Redirect to home
+        } else {
+          const error = await response.json();
+          alert(`Login failed: ${error.detail}`);
+        }
+      } catch (error) {
+        console.error('Error during login:', error);
+        alert('An error occurred. Please try again.');
+      }
     });
-
-    if (response.ok) {
-      alert('Login successful!');
-      window.location.href = 'http://127.0.0.1:8000/home';  // Redirect to home
-    } else {
-      const error = await response.json();
-      alert(`Login failed: ${error.detail}`);
-    }
-  } catch (error) {
-    console.error('Error during login:', error);
-    alert('An error occurred. Please try again.');
-  }
-});
-
-
-
   </script>
 </body>
 
