@@ -42,6 +42,7 @@ class PostBase(BaseModel):
     description : str
     category : str
     deadline : date
+    
 
 
 class UserBase(BaseModel):
@@ -74,10 +75,19 @@ async def create_post(post: PostBase , db: db_dependency):
     db.add(db_post)
     db.commit()
 
+
+def update_expired_jobs(db: Session):
+    """Updates expired jobs by setting active=False for past deadlines."""
+    today = datetime.now(timezone.utc)
+    db.query(models.Post).filter(models.Post.deadline < today, models.Post.active == True).update({"active": False})
+    db.commit()
+
 @app.get("/jobs/", response_class=JSONResponse)
 async def get_jobs(db: Session = Depends(get_db)):
     """Returns job listings as JSON for the frontend."""
-    posts = db.query(models.Post).all()
+
+    update_expired_jobs(db)
+    posts = db.query(models.Post).filter(models.Post.active == True).all()
     
     job_list = [
         {

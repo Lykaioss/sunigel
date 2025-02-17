@@ -187,43 +187,45 @@
     });
 
     async function fetchJobListings() {
-      try {
-        const response = await fetch('http://127.0.0.1:8000/jobs', { method: 'GET' });
-        if (response.ok) {
-          let jobs = await response.json();
-          console.log(jobs);
-          const jobListingsContainer = document.getElementById('job-listings');
-          jobListingsContainer.innerHTML = ''; // Clear previous content
+  try {
+    const response = await fetch('http://127.0.0.1:8000/jobs', { method: 'GET' });
+    if (response.ok) {
+      let jobs = await response.json();
+      console.log(jobs);
 
-          if (jobs.length === 0) {
-            jobListingsContainer.innerHTML = '<p>No job listings available.</p>';
-          } else {
-            jobs.forEach(job => {
-              const jobCard = document.createElement('div');
-              jobCard.classList.add('post-card');
+      const jobListingsContainer = document.getElementById('job-listings');
+      jobListingsContainer.innerHTML = ''; // Clear previous content
 
-              jobCard.innerHTML = `
-                <div class="post-title">${job.title}</div>
-                <div class="post-description">${job.description}</div>
-                <div class="post-footer">
-                  <span>Category: ${job.category}</span>
-                  <span>Deadline: ${job.deadline}</span>
-                </div>
-                <button class="apply-button" onclick="applyForJob('${job.title}')">Apply</button>
-              `;
+      if (jobs.length === 0) {
+        jobListingsContainer.innerHTML = '<p>No job listings available.</p>';
+      } else {
+        jobs.forEach(job => {
+          const jobCard = document.createElement('div');
+          jobCard.classList.add('post-card');
 
-              jobListingsContainer.appendChild(jobCard);
-            });
-          }
-        } else {
-          console.error('Failed to fetch job listings');
-          document.getElementById('job-listings').innerHTML = '<p>Failed to load job listings.</p>';
-        }
-      } catch (error) {
-        console.error('Error fetching job listings:', error);
-        document.getElementById('job-listings').innerHTML = '<p>Error loading job listings.</p>';
+          jobCard.innerHTML = `
+            <div class="post-title">${job.title}</div>
+            <div class="post-description">${job.description}</div>
+            <div class="post-footer">
+              <span>Category: ${job.category}</span>
+              <span>Deadline: ${job.deadline}</span>
+            </div>
+            <button class="apply-button" onclick="applyForJob('${job.title}')">Apply</button>
+          `;
+
+          jobListingsContainer.appendChild(jobCard);
+        });
       }
+    } else {
+      console.error('Failed to fetch job listings');
+      document.getElementById('job-listings').innerHTML = '<p>Failed to load job listings.</p>';
     }
+  } catch (error) {
+    console.error('Error fetching job listings:', error);
+    document.getElementById('job-listings').innerHTML = '<p>Error loading job listings.</p>';
+  }
+}
+
 
     function applyForJob(jobTitle) {
       alert(`Application for "${jobTitle}" has been submitted!`);

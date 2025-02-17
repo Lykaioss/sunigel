@@ -1,5 +1,6 @@
 from sqlalchemy import Boolean , Column , Integer , String , DateTime
 from database import Base
+from datetime import datetime ,timezone
 
 class User(Base):
     __tablename__ = 'users'
@@ -18,4 +19,7 @@ class Post(Base):
     category = Column(String(50))
     description = Column(String(100))
     deadline = Column(DateTime )
+    active = Column(Boolean, default=True)
+
+   
 
