@@ -47,6 +47,12 @@
     .upload-button:hover {
       background: #218838;
     }
+    .view-button {
+      background: #28a745;
+    }
+    .view-button:hover {
+      background: #218838;
+    }
     .logout-button {
       background: #ff4d4d;
     }
@@ -128,6 +134,7 @@
 <body>
   <div class="button-group">
     <button class="upload-button" id="upload-button" style="display: none;">Upload</button>
+    <button class="view-button" id="view-button" style="display: none;"> View</button>
     <button class="logout-button" id="logout-button">Logout</button>
   </div>
 
@@ -153,6 +160,7 @@
 
           if (user_res.user.isEmp) {
             document.getElementById('upload-button').style.display = 'inline-block';
+            document.getElementById('view-button').style.display = 'inline-block';
           }
         } else {
           console.error('Failed to fetch user info');
@@ -184,7 +192,34 @@
 
     document.getElementById('upload-button').addEventListener('click', () => {
       window.location.href = "/employee";
+
     });
+
+    async function viewEmployerJobs() {
+    try {
+        // Fetch the current employer's details
+        const response = await fetch("http://127.0.0.1:8000/current-employer", {
+            method: "GET",
+            credentials: "include" // Ensures session cookies are sent
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch employer data");
+        }
+
+        const employer = await response.json();
+        const employerId = employer.id;  // Assuming the API returns an employer object with an ID
+
+        // Redirect to the employer's job posts page
+        window.location.href = "/appu";
+    } catch (error) {
+        console.error("Error fetching employer jobs:", error);
+    }
+}
+
+    // Attach the function to the button
+    document.getElementById("view-button").addEventListener("click", viewEmployerJobs);
+
 
     async function fetchJobListings() {
   try {
@@ -210,7 +245,7 @@
               <span>Category: ${job.category}</span>
               <span>Deadline: ${job.deadline}</span>
             </div>
-            <button class="apply-button" onclick="applyForJob('${job.title}')">Apply</button>
+            <button class="apply-button" onclick="applyForJob('${job.id}')">Apply</button>
           `;
 
           jobListingsContainer.appendChild(jobCard);
@@ -224,12 +259,58 @@
     console.error('Error fetching job listings:', error);
     document.getElementById('job-listings').innerHTML = '<p>Error loading job listings.</p>';
   }
+
+  
 }
 
 
-    function applyForJob(jobTitle) {
-      alert(`Application for "${jobTitle}" has been submitted!`);
+async function applyForJob(jobId) {
+  const userId = localStorage.getItem("user_id"); // Assuming user_id is stored in localStorage after login
+  if (!userId) {
+    alert("You must be logged in to apply for a job.");
+    return;
+  }
+
+  const resumeUrl = prompt("Enter your resume URL:");
+  // const coverLetter = prompt("Enter your cover letter:");
+
+  // if (!resumeUrl || !coverLetter) {
+  //   alert("Application requires both a resume URL and a cover letter.");
+  //   return;
+  // }
+
+  try {
+
+    console.log("roshni ", userId , jobId)
+
+    const response = await fetch("http://127.0.0.1:8000/apply/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        job_id: jobId,
+        user_id: parseInt(userId),
+        resume_url: resumeUrl,
+        // cover_letter: coverLetter,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      alert(data.message);
+    } else {
+      const errorData = await response.json();
+      alert(`Application failed: ${errorData.detail}`);
     }
+  } catch (error) {
+    console.error("Error applying for the job:", error);
+    alert("An error occurred while applying. Please try again.");
+  }
+
+
+}
+
 
     // Fetch job listings when the page loads
     fetchJobListings();

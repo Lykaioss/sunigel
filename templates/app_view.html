@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Applicants</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f2f5;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      font-size: 26px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .applicant-card {
+      background: #fff;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .applicant-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .applicant-card p {
+      font-size: 16px;
+      color: #555;
+      margin: 8px 0;
+    }
+
+    .applicant-card strong {
+      color: #222;
+    }
+
+    .resume-link {
+      display: inline-block;
+      background: #007bff;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: background 0.3s ease;
+    }
+
+    .resume-link:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Applicants</h2>
+    <div id="applicants-list">Loading...</div>
+  </div>
+
+  <script>
+    async function fetchApplications() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const jobId = urlParams.get('job_id');
+
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/applications/${jobId}`);
+        if (response.ok) {
+          const data = await response.json();
+          const applicantsList = document.getElementById('applicants-list');
+          
+          if (data.applicants.length === 0) {
+            applicantsList.innerHTML = "<p>No applications found for this job.</p>";
+            return;
+          }
+
+          applicantsList.innerHTML = data.applicants.map(app =>
+            `<div class="applicant-card">
+              <p><strong>User ID:</strong> ${app.user_id}</p>
+              <p><strong>Email:</strong> ${app.email}</p>
+              <p><strong>Contact No:</strong> ${app.contact}</p>
+              <p><strong>Resume:</strong> <a href="${app.resume_url}" target="_blank" class="resume-link">View Resume</a></p>
+              <p><strong>Cover Letter:</strong> ${app.cover_letter}</p>
+            </div>`
+          ).join('');
+        } else {
+          document.getElementById('applicants-list').innerHTML = "<p>Failed to load applicants.</p>";
+        }
+      } catch (error) {
+        console.error('Error fetching applications:', error);
+      }
+    }
+
+    fetchApplications();
+  </script>
+
+</body>
+</html>
