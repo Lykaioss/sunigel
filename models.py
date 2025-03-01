@@ -10,12 +10,24 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(50), unique=True, index=True, nullable=False)
     contact = Column(String(15), unique=True, index=True,nullable=False )
+    isTpo = Column(Boolean, default=None, nullable=True)
 
     password = Column(String(100), nullable=False)
     isEmp = Column(Boolean, nullable=False, default=False)
 
     employer = relationship("Employer", back_populates="user", uselist=False)
+    tpo = relationship("TPO", back_populates="user", uselist=False, cascade="all, delete-orphan")
     applications = relationship("Application", back_populates="user")
+
+class TPO(Base):
+    __tablename__ = "tpos"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    college_name = Column(String(100), nullable=False)
+    college_location = Column(String(100), nullable=False)
+    
+    user = relationship("User", back_populates="tpo")
 
 class Employer(Base):
     __tablename__ = 'employers'

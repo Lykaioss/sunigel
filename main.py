@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, status, Request, Response
-from pydantic import BaseModel
+from pydantic import BaseModel 
 from sqlalchemy.orm import Session, joinedload
 from database import engine, SessionLocal
 import models
@@ -9,9 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import uuid
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse 
-from typing import List
+from typing import List , Optional
 from fastapi import Query
 from sqlalchemy.orm import joinedload
+import smtplib
+import dns.resolver
+
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -52,6 +55,9 @@ class UserBase(BaseModel):
     email: str
     contact: str
     isEmp: bool
+    isTpo: bool
+    college_name: Optional[str] = None
+    college_location: Optional[str] = None
 
 class LoginRequest(BaseModel):
     username: str
@@ -240,6 +246,58 @@ async def get_applications(job_id: int, request: Request, db: Session = db_depen
 
 
 # -------------------- USER AUTHENTICATION --------------------
+
+BLOCKED_DOMAINS = {
+    "gmail.com",
+    "yahoo.com",
+    "outlook.com",
+    "hotmail.com",
+    "aol.com",
+    "icloud.com",
+    "protonmail.com",
+    "zoho.com",
+    "yandex.com",
+    "mail.com",
+}
+
+def verify_email_smtp(email: str) -> bool:
+    try:
+        domain = email.split('@')[1]
+
+        # Check if the domain is in the blocked list
+        if domain.lower() in BLOCKED_DOMAINS:
+            print(f"Blocked email domain: {domain}")
+            return False
+
+        # Get MX records of the domain
+        mx_records = dns.resolver.resolve(domain, 'MX')
+        mx_record = str(mx_records[0].exchange)
+
+        # Connect to the SMTP server
+        server = smtplib.SMTP(timeout=10)
+        server.set_debuglevel(0)  # Set to 1 for debugging output
+        server.connect(mx_record)
+        server.helo()
+        server.mail('aslindcunha@gmail.com')  # Use a valid sender email
+        code, message = server.rcpt(email)
+        server.quit()
+        print("brittle ",code)
+
+        return code == 250  # 250 means the email exists
+    except Exception as e:
+        print("Error:", e)
+        return False
+
+@app.get("/verify-email/")
+def check_email(email: str):
+    if verify_email_smtp(email):
+        return {"email": email, "valid": True}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid or blocked email address")
+
+
+
+
 def get_current_user(request: Request):
     session_id = request.cookies.get("session_id")
     if session_id is None or session_id not in sessions:
@@ -273,7 +331,8 @@ async def create_user(user: UserBase, db: Session = db_dependency):
             email=user.email,
             password=hashed_password.decode('utf-8'),
             contact=user.contact,
-            isEmp=user.isEmp
+            isEmp=user.isEmp,
+            isTpo = user.isTpo
         )
 
         db.add(new_user)
@@ -285,6 +344,20 @@ async def create_user(user: UserBase, db: Session = db_dependency):
             employer = models.Employer(user_id=new_user.id, company_name=None)
             db.add(employer)
             db.commit()
+
+        if user.isTpo:
+            print(f"TPO Data: {user.college_name}, {user.college_location}")
+        if user.isTpo and user.college_name and user.college_location:
+            
+            tpo = models.TPO(
+                user_id=new_user.id,
+                college_name=user.college_name,
+                college_location=user.college_location
+            )
+            db.add(tpo)
+            db.commit()
+            print("succesfully added tpo ")
+
 
         return {"message": "User created successfully"}
 
@@ -315,7 +388,8 @@ async def show_user(request: Request):
         "user": {
             "username": user_session["username"],
             "created_at": user_session["created_at"],
-            "isEmp": user_session["isEmp"]
+            "isEmp": user_session["isEmp"],
+            "isTpo": user_session["isTpo"]
         }
     }
 
@@ -330,7 +404,8 @@ async def login(user: LoginRequest, response: Response, db: Session = db_depende
         "id": db_user.id,
         "username": db_user.username,
         "created_at": datetime.now(timezone.utc),
-        "isEmp": db_user.isEmp
+        "isEmp": db_user.isEmp,
+        "isTpo": db_user.isTpo
     }
 
     response.set_cookie(key="session_id", value=session_id, max_age=3600)

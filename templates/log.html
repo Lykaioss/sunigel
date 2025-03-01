@@ -111,6 +111,36 @@
     <div class="form-wrapper">
       <form id="signup-form" class="form active">
         <div class="form-group">
+          <label for="tpo">TPO</label>
+          <input type="checkbox" id="tpo" name="tpo" value="selected">
+        </div>
+
+        <!-- Extra Fields (Initially Hidden) -->
+        <div id="extra-fields" style="display: none;">
+          <div class="form-group">
+            <label for="college-name">College Name</label>
+            <input type="text" id="college-name" placeholder="Enter College Name">
+          </div>
+          <div class="form-group">
+            <label for="college-location">College Location</label>
+            <input type="text" id="college-location" placeholder="Enter College Location">
+          </div>
+        </div>
+
+        <!-- Role Selection -->
+        <div class="form-group" id="role-group">
+          <label>Role</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="role" value="true"  /> Employer
+            </label>
+            <label>
+              <input type="radio" name="role" value="false"  /> Student
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label for="username">Username</label>
           <input type="text" id="username" placeholder="Enter your username" required />
         </div>
@@ -120,23 +150,13 @@
         </div>
         <div class="form-group">
           <label for="contact">Contact</label>
-          <input type="text" id="contact" placeholder="Enter your email" required />
+          <input type="text" id="contact" placeholder="Enter your contact number" required />
         </div>
         <div class="form-group">
           <label for="password">Password</label>
           <input type="password" id="password" placeholder="Enter your password" required />
         </div>
-        <div class="form-group">
-          <label>Role</label>
-          <div class="radio-group">
-            <label>
-              <input type="radio" name="role" value="true" required /> Employer
-            </label>
-            <label>
-              <input type="radio" name="role" value="false" required /> Student
-            </label>
-          </div>
-        </div>
+        
         <button type="submit">Sign Up</button>
       </form>
       <form id="login-form" class="form">
@@ -157,6 +177,23 @@
   </div>
 
   <script>
+
+const tpoCheckbox = document.getElementById("tpo");
+    const extraFields = document.getElementById("extra-fields");
+    const roleGroup = document.getElementById("role-group");
+
+    // Event listener to show/hide extra fields when TPO checkbox is toggled
+    tpoCheckbox.addEventListener("change", function () {
+      if (this.checked) {
+        extraFields.style.display = "block"; // Show extra fields
+        roleGroup.style.display = "none"; // Hide role fields
+      } else {
+        extraFields.style.display = "none"; // Hide extra fields
+        roleGroup.style.display = "block"; // Show role fields
+      }
+    });
+
+
     const formHeading = document.getElementById('form-heading');
     const signupForm = document.getElementById('signup-form');
     const loginForm = document.getElementById('login-form');
@@ -183,9 +220,23 @@
     }
 
     document.getElementById('switch-form').addEventListener('click', (e) => {
-      e.preventDefault();
-      toggleForm();
+        e.preventDefault();
+        toggleForm();
     });
+
+
+
+
+    async function checkEmailValidity(email) {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/verify-email/?email=${email}`);
+      const result = await response.json();
+      return result.valid; // Backend returns { "valid": true } or { "valid": false }
+    } catch (error) {
+      console.error("Error checking email validity:", error);
+      return false; // Assume invalid if an error occurs
+    }
+  }
 
     // Handle Sign Up
     signupForm.addEventListener('submit', async (e) => {
@@ -195,7 +246,24 @@
       const email = document.getElementById('email').value;
       const contact = document.getElementById('contact').value;
       const password = document.getElementById('password').value;
-      const isEmp = document.querySelector('input[name="role"]:checked').value === 'true' ? true : false ;
+      const isTpo = tpoCheckbox.checked;
+      const college_location = document.getElementById('college-location').value;
+      const college_name = document.getElementById('college-name').value;
+      let isEmp = false; // Default false if TPO is checked
+      if (!isTpo) {
+        isEmp = document.querySelector('input[name="role"]:checked').value === 'true';
+      }
+
+
+      if (isEmp){
+        const isValidEmail = await checkEmailValidity(email);
+      if (!isValidEmail) {
+        alert("Invalid email address. Please use a valid email.");
+        return;
+      }
+      }
+
+      
       
       console.log("Role:", isEmp);
 
@@ -205,7 +273,7 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ username, email, contact,  password, isEmp }),
+          body: JSON.stringify({ username, email, contact,  password, isEmp , isTpo, college_name , college_location }),
         });
 
         if (response.ok) {
