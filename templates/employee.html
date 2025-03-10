@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,6 +38,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -47,9 +49,11 @@
             0% {
                 transform: scale(1);
             }
+
             50% {
                 transform: scale(1.05);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -59,6 +63,7 @@
             0% {
                 background-position: -1000px 0;
             }
+
             100% {
                 background-position: 1000px 0;
             }
@@ -110,7 +115,8 @@
         }
 
         /* Form Styles */
-        .form-section, .jobs-section {
+        .form-section,
+        .jobs-section {
             background: var(--card-bg);
             border-radius: 15px;
             padding: 30px;
@@ -119,7 +125,8 @@
             transition: all 0.3s ease;
         }
 
-        .form-section:hover, .jobs-section:hover {
+        .form-section:hover,
+        .jobs-section:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
         }
@@ -135,7 +142,8 @@
             font-weight: 600;
         }
 
-        .form-input, .form-select {
+        .form-input,
+        .form-select {
             width: 100%;
             padding: 12px;
             border: 2px solid var(--primary-color);
@@ -144,7 +152,8 @@
             background: rgba(52, 152, 219, 0.05);
         }
 
-        .form-input:focus, .form-select:focus {
+        .form-input:focus,
+        .form-select:focus {
             outline: none;
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.2);
@@ -175,7 +184,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
             transition: all 0.6s;
         }
 
@@ -259,6 +268,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -283,7 +293,8 @@
 
                     <div class="form-group">
                         <label class="form-label">Job Description</label>
-                        <textarea class="form-input" id="job_description" placeholder="Describe job responsibilities" rows="4" required></textarea>
+                        <textarea class="form-input" id="job_description" placeholder="Describe job responsibilities"
+                            rows="4" required></textarea>
                     </div>
 
                     <div class="form-group">
@@ -354,44 +365,53 @@
 
     console.log("heelo ur phione lining")
 
-    document.getElementById('submitto').addEventListener('click', async() => {
+    document.getElementById('submitto').addEventListener('click', async () => {
         // e.preventDefault();
 
         const title = document.getElementById('job_title').value
-        const description = document.getElementById('job_description').value  
-        const category = document.getElementById('job_cat').value 
-        const deadline = document.getElementById('deadline').value  
+        const description = document.getElementById('job_description').value
+        const category = document.getElementById('job_cat').value
+        const deadline = document.getElementById('deadline').value
 
 
-        try{
-            console.log("title" , title)
-            console.log("descrpp" , description)
-            console.log("category" , category) 
-            console.log("deadline" , deadline) 
-            const response = await fetch('http://127.0.0.1:8000/posts/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ title , description , category , deadline}),
-                credentials: 'include',
+        console.log("title", title);
+        console.log("descrpp", description);
+        console.log("category", category);
+        console.log("deadline", deadline);
+
+        fetch('http://127.0.0.1:8000/posts/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title, description, category, deadline }),
+            credentials: 'include',
+        })
+            .then(response => {
+                console.log("same same air waka waka", response);
+                if (response.ok) {
+                    alert('Job-Creation successful!');
+                    window.location.href = 'http://127.0.0.1:8000/home'; // Redirect to home
+                    return response.json(); // Parse JSON if response is OK
+                } else {
+                    return response.json().then(error => {
+                        throw new Error(`Job-Creation failed: ${error.detail}`);
+                    });
+                }
             })
-
-            if (response.ok) {
-          alert(' Job-Creation successful!');
-          window.location.href = 'http://127.0.0.1:8000/home';  // Redirect to home
-        } else {
-          const error = await response.json();
-          alert(` Job-Creation failed: ${error.detail}`);
-        }
-
-        } catch (error) {
-        console.error('Error during creation :', error);
-        alert('An error occurred. Please try again.');
-      }
-    
+            // .then(data => {
+            //     alert('Job-Creation successful!');
+            //     window.location.href = 'http://127.0.0.1:8000/home'; // Redirect to home
+            // })
+            .catch(error => {
+                console.error('Error during creation:', error);
+                alert(error.message);
+            });
 
 
-         });
+
+
+    });
 </script>
+
 </html>
